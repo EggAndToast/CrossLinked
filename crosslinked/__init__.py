@@ -53,17 +53,18 @@ def start_scrape(args):
     tmp = []
     Log.info("Searching {} for valid employee names at \"{}\"".format(', '.join(args.engine), args.company_name))
     
-#    if args.company_name.endswith('.csv'):
-#         with open(args.company_name) as f:
-#             csv_data = reader(f, delimiter=',')
-#             next(csv_data)
-#             for r in csv_data:
-#                Log.info(r)
-
-    for search_engine in args.engine:
-        c = CrossLinked(search_engine, urllib.parse.quote(args.company_name), args.timeout, 3, args.proxy, args.jitter)
-        if search_engine in c.url.keys():
-            tmp += c.search()
+    if args.company_name.endswith('.txt'):
+         with open(args.company_name) as f:
+             for line in f.readlines():
+                for search_engine in args.engine:
+                    c = CrossLinked(search_engine, urllib.parse.quote(line), args.timeout, 3, args.proxy, args.jitter)
+                    if search_engine in c.url.keys():
+                        tmp += c.search()
+    else:
+        for search_engine in args.engine:
+            c = CrossLinked(search_engine, urllib.parse.quote(args.company_name), args.timeout, 3, args.proxy, args.jitter)
+            if search_engine in c.url.keys():
+                tmp += c.search()
     return tmp
 
 

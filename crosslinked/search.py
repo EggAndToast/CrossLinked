@@ -119,10 +119,6 @@ class CrossLinked:
         try:
             fname = data.split("-")[0].split(' ')[0].strip()
             fname = fname.replace("'", "")
-            Log.info(url.split('/in/'))          
-#            urlfname = (url.split("in/")).split('-')[0]
-#            if fname != urlfname:
-#                fname = urlfname            
             return unidecode(fname)
         except:
             return False
@@ -131,9 +127,6 @@ class CrossLinked:
         try:
             name = list(filter(None, data.split("-")[0].split(' ')))
             lname = name[-1].strip()
-#            urllname = url.split("in/").split('-')[1]
-#            if lname != urllname:
-#                lname = urllname
             return unidecode(lname[:-1]) if lname.endswith(".") else unidecode(lname)
         except:
             return False
