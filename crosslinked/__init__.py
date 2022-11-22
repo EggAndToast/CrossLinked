@@ -3,6 +3,7 @@
 # License: GPLv3
 
 import argparse
+import urllib.parse
 from sys import exit
 from csv import reader
 from crosslinked import utils
@@ -51,9 +52,16 @@ def cli():
 def start_scrape(args):
     tmp = []
     Log.info("Searching {} for valid employee names at \"{}\"".format(', '.join(args.engine), args.company_name))
+    
+#    if args.company_name.endswith('.csv'):
+#         with open(args.company_name) as f:
+#             csv_data = reader(f, delimiter=',')
+#             next(csv_data)
+#             for r in csv_data:
+#                Log.info(r)
 
     for search_engine in args.engine:
-        c = CrossLinked(search_engine,  args.company_name, args.timeout, 3, args.proxy, args.jitter)
+        c = CrossLinked(search_engine, urllib.parse.quote(args.company_name), args.timeout, 3, args.proxy, args.jitter)
         if search_engine in c.url.keys():
             tmp += c.search()
     return tmp
@@ -105,6 +113,7 @@ def main():
         txt = setup_file_logger(args.outfile+".txt", log_name="cLinked_txt", file_mode='w')    # names.txt overwritten
         csv = setup_file_logger(args.outfile+".csv", log_name="cLinked_csv", file_mode='a')    # names.csv appended
 
+        start_scrape(args)
         data = start_parse(args) if args.company_name.endswith('.csv') else start_scrape(args)
         format_names(args, data, txt) if len(data) > 0 else Log.warn('No results found')
     except KeyboardInterrupt:
