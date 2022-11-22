@@ -50,6 +50,9 @@ class CrossLinked:
         self.proxies = proxies
         self.target = target
         self.jitter = jitter
+        self.counter = 0
+        self.prevCounter = 0
+        self.same = 0
 
     def search(self):
         search_timer = Timer(self.timeout)
@@ -68,6 +71,19 @@ class CrossLinked:
 
                 self.page_parser(resp)
                 Log.info("{:<3} {} ({})".format(len(self.results), url, http_code))
+                
+                self.counter = url.split('&first=')[1]
+                if self.counter != self.prevCounter:
+                    self.prevCounter = self.counter
+                    self.same = 0
+                elif self.counter == self.prevCounter:
+                    self.same += 1
+                
+                if self.same == 5:
+                    Log.warn("Reached 5 Same Record Times")
+                    break
+
+                Log.info("Counter {} PrevCounter {} Same {}".format(self.counter,self.prevCounter,self.same))
 
                 sleep(self.jitter)
             except KeyboardInterrupt:
@@ -88,8 +104,8 @@ class CrossLinked:
         u = {'url': url}
         u['text'] = unidecode(link.text.split("|")[0].split("...")[0])  # Capture link text before trailing chars
         u['title'] = self.parse_linkedin_title(u['text'])               # Extract job title
-        u['fname'] = self.parse_linkedin_fname(u['text'])               # Extract first name
-        u['lname'] = self.parse_linkedin_lname(u['text'])               # Extract last name
+        u['fname'] = self.parse_linkedin_fname(u['text'], u['url'])               # Extract first name
+        u['lname'] = self.parse_linkedin_lname(u['text'], u['url'])               # Extract last name
         return u
 
     def parse_linkedin_title(self, data):
@@ -99,18 +115,25 @@ class CrossLinked:
         except:
             return 'N/A'
 
-    def parse_linkedin_fname(self, data):
+    def parse_linkedin_fname(self, data, url):
         try:
             fname = data.split("-")[0].split(' ')[0].strip()
             fname = fname.replace("'", "")
+            Log.info(url.split('/in/'))          
+#            urlfname = (url.split("in/")).split('-')[0]
+#            if fname != urlfname:
+#                fname = urlfname            
             return unidecode(fname)
         except:
             return False
 
-    def parse_linkedin_lname(self, data):
+    def parse_linkedin_lname(self, data, url):
         try:
             name = list(filter(None, data.split("-")[0].split(' ')))
             lname = name[-1].strip()
+#            urllname = url.split("in/").split('-')[1]
+#            if lname != urllname:
+#                lname = urllname
             return unidecode(lname[:-1]) if lname.endswith(".") else unidecode(lname)
         except:
             return False
